@@ -39,21 +39,14 @@ public class BoardService {
     public List<Article> getArticlesByTime() {
         return articleDao.getArticlesByTime();
     }
-
-    // 게시글 등록
-    public boolean createArticle(int userId, String userName, int boardId, String title, String content, String imageUrl) {
+    
+    // 게시판 등록
+    public boolean createBoard(String name, String description) {
         try {
-            Article article = new Article();
-            article.setBoardId(boardId);
-            article.setTitle(title);
-            article.setContent(content);
-            article.setCreatedAt(LocalDateTime.now());
-            article.setPopularity(0);
-            article.setImageUrl(imageUrl);
-            article.setWriterId(userId);
-            article.setWriterName(userName);
-
-            articleDao.uploadArticle(article);
+            Board board = new Board();
+            board.setName(name);
+            board.setDescription(description);
+            boardDao.insertBoard(board);
             return true;
         } catch (Exception e) {
             return false;

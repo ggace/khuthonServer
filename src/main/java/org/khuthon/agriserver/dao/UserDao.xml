@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.khuthon.agriserver.dao.UserDao">
+    <select id="getUserByLoginId" resultType="User">
+        SELECT *
+        FROM `user`
+        WHERE user_id=#{loginId}
+    </select>
+
+    <insert id="join">
+        INSERT INTO `user`
+        SET user_name=#{nickname},
+        user_id=#{loginId},
+        user_pw=#{loginPw}
+    </insert>
+
+
+
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.khuthon.agriserver.dao.LandDao">
+    <select id="getLandList" resultType="Land">
+		SELECT *
+        FROM land
+        JOIN `user`
+        ON land.owner_id=user.id
+	</select>
+
+    <select id="getLand" resultType="Land">
+		SELECT *
+        FROM land
+        JOIN `user`
+        ON land.owner_id=user.id
+        where land.id=#{id}
+	</select>
+
+    <insert id="registerLand">
+        INSERT INTO land
+        SET owner_id=#{ownerid},
+        latitude=#{latitude},
+        longitude=#{longitude},
+        landName=#{landName},
+        size=#{size},
+        contents=#{contents},
+        phoneNumber=#{phone}
+    </insert>
+
+    <delete id="deleteLand">
+        DELETE FROM land
+        WHERE id=#{land}
+        AND owner_id=#{owner_id}
+    </delete>
+
+    <insert id="registerLandUse">
+        INSERT INTO regLand
+        SET land_id=#{landId},
+        user_id=#{id}
+    </insert>
+
+    <delete id="finishLandUse">
+        DELETE FROM regLand
+        WHERE land_id=#{landId},
+        user_id=#{id}
+    </delete>
+
+</mapper>

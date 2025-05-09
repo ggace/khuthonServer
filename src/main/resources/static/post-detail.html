@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 상세</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- 필요한 경우 여기에 추가적인 CSS나 JS 파일을 연결할 수 있습니다. -->
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="logo"><img src="assets/logo.png" alt="로고"></a>
+            <a href="index.html" class="site-title" style="text-decoration: none;">PUBLIC GARDEN</a>
+            <button class="user-info" id="open-auth-modal-button">로그인 / 회원가입</button>
+        </header>
+
+        <main class="post-detail-content">
+            <h1 id="post-title-placeholder">게시글 제목이 여기에 표시됩니다.</h1>
+            <div id="post-author-placeholder" style="color: #555; margin-bottom: 10px;">작성자: (작성자 정보)</div>
+            <div id="post-date-placeholder" style="color: #777; margin-bottom: 20px;">작성일: (날짜 정보)</div>
+            
+            <div id="post-body-placeholder" style="border: 1px solid #eee; padding: 15px; min-height: 200px; background-color: #f9f9f9; border-radius: 5px;">
+                <p>게시글 내용이 여기에 로드됩니다...</p>
+                <p>실제 서버 연동 시, 이 부분은 게시글 ID를 기반으로 서버에서 가져온 데이터로 채워집니다.</p>
+            </div>
+
+            <div style="margin-top: 30px; text-align: right;">
+                <a href="board.html" id="back-to-board-button" class="button" style="background-color: #6c757d; padding: 6px 15px 8px 17px; font-size: 2em;">목록으로</a>
+            </div>
+        </main>
+    </div>
+
+    <script src="auth-modal.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const backButton = document.getElementById('back-to-board-button');
+            const urlParams = new URLSearchParams(window.location.search);
+            // const categoryFromUrl = urlParams.get('category'); // 더 이상 목록으로 돌아갈 때 직접 사용하지 않음
+            const postId = urlParams.get('id'); 
+
+            const postTitleElement = document.getElementById('post-title-placeholder');
+            if (postTitleElement && postId) {
+                postTitleElement.textContent = `게시글 상세 (ID: ${postId})`;
+            }
+            // 여기에 게시글 내용을 불러오는 로직 추가 가능 (예: fetch API 사용)
+
+            if (backButton) {
+                backButton.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    const cameFromIndex = sessionStorage.getItem('cameFromIndex');
+
+                    if (cameFromIndex === 'true') {
+                        sessionStorage.setItem('boardActiveTab', '최신'); // 항상 '최신' 탭으로 설정
+                        sessionStorage.removeItem('cameFromIndex');
+                    }
+                    window.location.href = 'board.html';
+                });
+            }
+        });
+    </script>
+
+    <!-- 인증 모달 (auth-modal.js와 연동되려면 필요) -->
+    <div id="auth-modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="close-auth-modal-button">&times;</button>
+            <div id="login-form-container">
+                <h2>로그인</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">이메일</label>
+                        <input type="email" id="login-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">비밀번호</label>
+                        <input type="password" id="login-password" name="password" required>
+                    </div>
+                    <button type="submit" class="auth-button">로그인</button>
+                </form>
+                <p class="switch-form-text">계정이 없으신가요? <a href="#" id="show-signup-link">회원가입</a></p>
+            </div>
+            <div id="signup-form-container" style="display: none;">
+                <h2>회원가입</h2>
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-name">이름</label>
+                        <input type="text" id="signup-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">이메일</label>
+                        <input type="email" id="signup-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">비밀번호</label>
+                        <input type="password" id="signup-password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password-confirm">비밀번호 확인</label>
+                        <input type="password" id="signup-password-confirm" name="password-confirm" required>
+                    </div>
+                    <button type="submit" class="auth-button">가입하기</button>
+                </form>
+                <p class="switch-form-text">이미 계정이 있으신가요? <a href="#" id="show-login-link">로그인</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

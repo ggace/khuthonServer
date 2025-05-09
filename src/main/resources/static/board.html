@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>게시판</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<div class="container">
+		<header>
+			<a href="index.html" class="logo"><img src="assets/logo.png" alt="로고"></a>
+			<a href="index.html" class="site-title" style="text-decoration: none;">PUBLIC GARDEN</a>
+			<button class="user-info" id="open-auth-modal-button">로그인 / 회원가입</button>
+		</header>
+
+		<h1>게시판</h1>
+
+		<div class="board-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+			<div class="board-nav">
+				<a href="#" class="active">최신</a>
+				<a href="#">공지</a>
+				<a href="#">자유</a>
+				<a href="#">정보</a>
+				<a href="#">인기</a>
+			</div>
+			<button class="button" id="open-write-post-modal-button" style="font-size: 1.2em; padding: 8px 15px;">글쓰기</button>
+		</div>
+
+		<div class="content-section" id="post-list-container">
+			<!-- 게시글 목록이 JavaScript에 의해 여기에 동적으로 채워집니다. -->
+		</div>
+	</div>
+	<script src="board-nav.js"></script>
+	<script src="auth-modal.js"></script>
+
+	<!-- 인증 모달 시작 -->
+	<div id="auth-modal" class="modal" style="display: none;">
+		<div class="modal-overlay"></div>
+		<div class="modal-content">
+			<button class="close-auth-modal-button">&times;</button>
+			
+			<div id="login-form-container">
+				<h2>로그인</h2>
+				<form id="login-form"  action="/api/user/login" method="get">
+					<div class="form-group">
+						<label for="login-email">이메일</label>
+						<input type="email" id="login-email" name="loginId" required>
+					</div>
+					<div class="form-group">
+						<label for="login-password">비밀번호</label>
+						<input type="password" id="login-password" name="loginPw" required>
+					</div>
+					<button type="submit" class="auth-button">로그인</button>
+				</form>
+				<p class="switch-form-text">계정이 없으신가요? <a href="#" id="show-signup-link">회원가입</a></p>
+			</div>
+
+			<div id="signup-form-container" style="display: none;">
+				<h2>회원가입</h2>
+				<form id="signup-form" action="/api/user/join" method="post">
+					<div class="form-group">
+						<label for="signup-name">이름</label>
+						<input type="text" id="signup-name" name="nickname" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-email">이메일</label>
+						<input type="email" id="signup-email" name="loginId" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-password">비밀번호</label>
+						<input type="password" id="signup-password" name="loginPw" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-password-confirm">비밀번호 확인</label>
+						<input type="password" id="signup-password-confirm" name="password-confirm" required>
+					</div>
+					<button type="submit" class="auth-button">가입하기</button>
+				</form>
+				<p class="switch-form-text">이미 계정이 있으신가요? <a href="#" id="show-login-link">로그인</a></p>
+			</div>
+		</div>
+	</div>
+	<!-- 인증 모달 끝 -->
+
+	<!-- 글쓰기 모달 시작 -->
+	<div id="write-post-modal" class="modal" style="display: none;">
+		<div class="modal-overlay"></div>
+		<div class="modal-content">
+			<button class="close-write-post-modal-button">&times;</button>
+			<h2>게시글 작성</h2>
+			<form id="write-post-form">
+				<input type="hidden" id="post-boardId" name="boardId">
+				<div class="form-group">
+					<label for="post-title">제목</label>
+					<input type="text" id="post-title" name="title" required>
+				</div>
+				<div class="form-group">
+					<label for="post-content">내용</label>
+					<textarea id="post-content" name="content" rows="10" required></textarea>
+				</div>
+				<div class="form-group">
+					<label for="post-image">이미지 첨부</label>
+					<input type="file" id="post-image" name="image" accept="image/*">
+				</div>
+				<button type="submit">등록하기</button>
+			</form>
+		</div>
+	</div>
+	<!-- 글쓰기 모달 끝 -->
+
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const writePostModal = document.getElementById('write-post-modal');
+			const openWritePostModalButton = document.getElementById('open-write-post-modal-button');
+			const closeWritePostModalButton = writePostModal ? writePostModal.querySelector('.close-write-post-modal-button') : null;
+			const writePostModalOverlay = writePostModal ? writePostModal.querySelector('.modal-overlay') : null;
+			const writePostForm = document.getElementById('write-post-form');
+			const postBoardIdInput = document.getElementById('post-boardId');
+
+			const categoryBoardIdMapForWrite = {
+				'공지': 1,
+				'자유': 2,
+				'정보': 3,
+				'최신': 2, 
+				'인기': 2  
+			};
+
+			function openWritePostModal() {
+				if (writePostModal) {
+					const activeNav = document.querySelector('.board-nav a.active');
+					let currentBoardId = categoryBoardIdMapForWrite['자유']; 
+					if (activeNav) {
+						const activeTabText = activeNav.textContent.trim();
+						if (categoryBoardIdMapForWrite[activeTabText]) {
+							currentBoardId = categoryBoardIdMapForWrite[activeTabText];
+						}
+					}
+					if (postBoardIdInput) {
+						postBoardIdInput.value = currentBoardId;
+					}
+					writePostModal.style.display = 'flex';
+				}
+			}
+
+			function closeWritePostModal() {
+				if (writePostModal) {
+					writePostModal.style.display = 'none';
+					if (writePostForm) writePostForm.reset();
+				}
+			}
+
+			if (openWritePostModalButton) {
+				openWritePostModalButton.addEventListener('click', openWritePostModal);
+			}
+			if (closeWritePostModalButton) {
+				closeWritePostModalButton.addEventListener('click', closeWritePostModal);
+			}
+			if (writePostModalOverlay) {
+				writePostModalOverlay.addEventListener('click', closeWritePostModal);
+			}
+			window.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape' && writePostModal && writePostModal.style.display === 'flex') {
+					closeWritePostModal();
+				}
+			});
+
+			if (writePostForm) {
+				writePostForm.addEventListener('submit', async (e) => {
+					e.preventDefault();
+					const boardId = postBoardIdInput.value;
+					const title = document.getElementById('post-title').value;
+					const content = document.getElementById('post-content').value;
+					const imageFile = document.getElementById('post-image').files[0];
+
+					const params = new URLSearchParams({
+						boardId: boardId,
+						title: title,
+						content: content
+					});
+
+					if (imageFile) {
+						params.append('imageFileName', imageFile.name);
+						console.warn("게시글 등록: 'image' 필드는 GET 요청으로 파일 자체를 보내기 어렵습니다. 현재 파일 이름만 파라미터로 추가합니다. 서버 측 구현을 확인해주세요.");
+					}
+					
+					
+					const uploadApiUrl = 'http://172.21.12.44:5500/api/article/upload?' + params.toString();
+
+					try {
+						const response = await fetch(uploadApiUrl, { method: 'GET' });
+
+						
+						if (!response.ok) {
+							const errorData = await response.text().catch(() => '서버 응답 오류');
+							throw new Error('게시글 등록 실패: ' + response.status + ' - ' + errorData);
+						}
+						
+						const resultMessage = await response.text(); 
+						alert('게시글 등록 성공: ' + resultMessage);
+						closeWritePostModal();
+						
+						const activeNav = document.querySelector('.board-nav a.active');
+						if (activeNav) {
+							activeNav.click(); 
+						} else {
+							const recentNav = document.querySelector('.board-nav a'); 
+							if(recentNav) recentNav.click();
+						}
+
+					} catch (error) {
+						console.error('게시글 등록 중 오류:', error);
+						alert('게시글 등록 중 오류 발생: ' + error.message);
+					}
+				});
+			}
+		});
+	</script>
+</body>
+</html>

@@ -3,8 +3,17 @@
 
 <mapper namespace="org.khuthon.agriserver.dao.BoardDao">
 
+
+    <!-- 모든 게시판 조회 -->
     <select id="getAllBoards" resultType="Board">
         SELECT * FROM board
     </select>
+
+    <!-- 게시판 생성 -->
+    <insert id="insertBoard" parameterType="Board">
+        INSERT INTO board (name, description)
+        VALUES (#{name}, #{description})
+    </insert>
+
 
 </mapper>

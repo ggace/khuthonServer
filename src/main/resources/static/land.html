@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>토지 정보</title>
+	<link rel="stylesheet" href="styles.css">
+	<!-- <script src="location-selector.js"></script> -->
+</head>
+<body>
+	<div class="container">
+		<header>
+			<a href="index.html" class="logo"><img src="assets/logo.png" alt="로고"></a>
+			<a href="index.html" class="site-title" style="text-decoration: none;">PUBLIC GARDEN</a>
+			<button class="user-info" id="open-auth-modal-button">로그인 / 회원가입</button>
+		</header>
+
+		<h1>토지</h1>
+
+		<div class="search-filters">
+			<input type="number" id="radius-km" placeholder="반경(km)" style="font-size: 1.1em; padding: 0px 0px 4px 5px; max-inline-size: 120px;">
+			<input type="text" id="current-location-display" placeholder="감지된 현재 위치" readonly style="font-size: 1.1em; padding: 0px 0px 4px 5px; flex-grow: 2;">
+			<input type="number" id="filter-price-per-unit" style="font-size: 1.1em; padding: 0px 0px 4px 5px; max-inline-size: 90px;" placeholder="단가(최대)">
+			<input type="number" id="filter-total-price" style="font-size: 1.1em; padding: 0px 0px 4px 5px; max-inline-size: 90px;" placeholder="총액(최대)">
+			<input type="number" id="filter-size" style="font-size: 1.1em; padding: 0px 0px 4px 5px; max-inline-size: 90px;" placeholder="면적(최소)">
+			<button class="button" id="search-land-button">검색</button>
+			<button class="button" id="open-register-modal-button">토지 등록</button>
+		</div>
+
+		<div class="land-info-grid">
+			<p style="text-align:center;">검색 조건을 입력하고 검색 버튼을 눌러주세요.</p>
+		</div>
+	</div>
+	<script src="auth-modal.js"></script>
+
+	<!-- 인증 모달 시작 -->
+	<div id="auth-modal" class="modal" style="display: none;">
+		<div class="modal-overlay"></div>
+		<div class="modal-content">
+			<button class="close-auth-modal-button">&times;</button>
+			
+			<div id="login-form-container">
+				<h2>로그인</h2>
+				<form id="login-form" action="/api/user/login" method="get">
+					<div class="form-group">
+						<label for="login-email">이메일</label>
+						<input type="email" id="login-email" name="email" required>
+					</div>
+					<div class="form-group">
+						<label for="login-password">비밀번호</label>
+						<input type="password" id="login-password" name="password" required>
+					</div>
+					<button type="submit" class="auth-button">로그인</button>
+				</form>
+				<p class="switch-form-text">계정이 없으신가요? <a href="#" id="show-signup-link">회원가입</a></p>
+			</div>
+
+			<div id="signup-form-container" style="display: none;">
+				<h2>회원가입</h2>
+				<form id="signup-form" action="/api/user/join" method="post">
+					<div class="form-group">
+						<label for="signup-name">이름</label>
+						<input type="text" id="signup-name" name="name" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-email">이메일</label>
+						<input type="email" id="signup-email" name="loginId" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-password">비밀번호</label>
+						<input type="password" id="signup-password" name="loginPw" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-password-confirm">비밀번호 확인</label>
+						<input type="password" id="signup-password-confirm" name="password-confirm" required>
+					</div>
+					<button type="submit" class="auth-button">가입하기</button>
+				</form>
+				<p class="switch-form-text">이미 계정이 있으신가요? <a href="#" id="show-login-link">로그인</a></p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 토지 등록 모달 시작 -->
+	<div id="register-land-modal" class="modal" style="display: none;">
+		<div class="modal-overlay"></div>
+		<div class="modal-content">
+			<button class="close-register-modal-button">&times;</button>
+			<h2>토지 등록</h2>
+			<form id="register-land-form" action="/api/land/" method="post">
+				<div class="form-grid-layout"> 
+					<div class="form-group">
+						<label for="reg-latitude">위도</label>
+						<input type="number" id="reg-latitude" name="latitude" required>
+					</div>
+					<div class="form-group">
+						<label for="reg-longitude">경도</label>
+						<input type="number" id="reg-longitude" name="longitude" required>
+					</div>
+					<div class="form-group">
+						<label for="reg-landName">토지 이름</label>
+						<input type="text" id="reg-landName" name="landName" required>
+					</div>
+					<div class="form-group">
+						<label for="reg-contents">내용</label>
+						<textarea id="reg-contents" name="contents" rows="3" required></textarea>
+					</div>
+					<div class="form-group">
+						<label for="reg-phone">전화번호</label>
+						<input type="tel" id="reg-phone" name="phone" required>
+					</div>
+					<div class="form-group">
+						<label for="reg-size">면적(size)</label>
+						<input type="number" id="reg-size" name="size" required>
+					</div>
+					<div class="form-group">
+						<label for="reg-price">가격</label>
+						<input type="number" id="reg-price" name="price" required>
+					</div>
+				</div> 
+				<button type="submit" class="auth-button" id="submit-registration-button">등록하기</button>
+			</form>
+		</div>
+	</div>
+	<!-- 토지 등록 모달 끝 -->
+
+	<script>
+		const landInfoGrid = document.querySelector('.land-info-grid');
+		const baseApiUrl = 'http://172.21.12.44:5500/api/land/'; 
+		const radiusInput = document.getElementById('radius-km');
+		const locationDisplay = document.getElementById('current-location-display');
+		const searchButton = document.getElementById('search-land-button');
+
+		const pricePerUnitInput = document.getElementById('filter-price-per-unit');
+		const totalPriceInput = document.getElementById('filter-total-price');
+		const sizeInput = document.getElementById('filter-size');
+
+		async function fetchAndDisplayLands(apiUrlWithParams) {
+			if (!landInfoGrid) {
+				console.error('Land info grid container not found.');
+				return;
+			}
+			landInfoGrid.innerHTML = '<p style="text-align:center;">토지 정보를 불러오는 중입니다...</p>';
+
+			try {
+				const response = await fetch(apiUrlWithParams);
+				if (!response.ok) {
+					throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+				}
+				const lands = await response.json();
+				landInfoGrid.innerHTML = '';
+
+				if (lands && lands.length > 0) {
+					lands.forEach(land => {
+						if (typeof land.id === 'undefined') {
+							console.warn('API 응답에 토지 ID(land.id)가 없습니다. 상세 페이지로 연결할 수 없습니다.', land);
+						}
+						const link = document.createElement('a');
+						link.href = land.id ? `land-detail.html?id=${land.id}` : '#';
+						link.style.textDecoration = 'none';
+						link.style.color = 'inherit';
+						link.style.display = 'block';
+
+						// 상세 페이지로 이동하기 전에 sessionStorage에 토지 데이터 저장
+						link.addEventListener('click', () => {
+							if (land && typeof land.id !== 'undefined') {
+								try {
+									sessionStorage.setItem(`landDetail-${land.id}`, JSON.stringify(land));
+								} catch (e) {
+									console.error('sessionStorage에 토지 데이터 저장 실패:', e);
+									// 저장 실패 시, 기존처럼 ID만으로 상세페이지에서 fetch 하도록 sessionStorage를 정리할 수도 있음
+									// sessionStorage.removeItem(`landDetail-${land.id}`); 
+								}
+							}
+						});
+
+						const landItem = document.createElement('div');
+						landItem.classList.add('land-info-item');
+
+						const farmName = land.landName || '이름 정보 없음';
+						const userName = land.userName || '사용자 정보 없음';
+						const imageUrl = land.img;
+						let locationString = `위도: ${land.latitude}, 경도: ${land.longitude}`;
+						if (!land.contents && (typeof land.latitude === 'undefined' || typeof land.longitude === 'undefined')) {
+							locationString = '위치 정보 없음';
+						}
+						const price = land.price >= 0 ? `${land.price.toLocaleString()}원` : '가격 정보 없음';
+						const area = land.size ? `${land.size}㎡` : '면적 정보 없음';
+						const phoneNumber = land.phoneNumber || '연락처 정보 없음';
+
+						let imagePlaceholderHtml = '';
+						if (imageUrl) {
+							imagePlaceholderHtml = `<div class="land-image-placeholder" style="background-image: url('${imageUrl}');"></div>`;
+						} else {
+							imagePlaceholderHtml = `<div class="land-image-placeholder" style="background-image: url('assets/land_name.png');"></div>`; 
+						}
+
+						landItem.innerHTML = `
+							<h3>${farmName}</h3>
+							<p style="font-size: 0.8em; color: #555; margin-top: -5px; margin-bottom: 10px;">소유자: ${userName}</p>
+							${imagePlaceholderHtml}
+							<div class="land-item-details">
+								<p><strong>위치:</strong> <span>${locationString}</span></p>
+								<p><strong>가격:</strong> <span>${price}</span></p>
+								<p><strong>면적:</strong> <span>${area}</span></p>
+								<p><strong>연락처:</strong> <span>${phoneNumber}</span></p>
+							</div>
+						`;
+						link.appendChild(landItem);
+						landInfoGrid.appendChild(link);
+					});
+				} else {
+					landInfoGrid.innerHTML = '<p style="text-align:center;">등록된 토지 정보가 없습니다. (또는 검색 결과 없음)</p>';
+				}
+			} catch (error) {
+				console.error('토지 정보를 불러오는 중 오류 발생:', error);
+				landInfoGrid.innerHTML = `<p style="text-align:center; color:red;">토지 정보를 불러오는 데 실패했습니다: ${error.message}</p>`;
+			}
+		}
+
+		searchButton.addEventListener('click', () => {
+			const radiusValue = radiusInput.value.trim();
+			const params = new URLSearchParams();
+
+			if (pricePerUnitInput.value) params.append('max_price_per_unit', pricePerUnitInput.value);
+			if (totalPriceInput.value) params.append('max_total_price', totalPriceInput.value);
+			if (sizeInput.value) params.append('min_size', sizeInput.value);
+
+			if (radiusValue && !isNaN(parseFloat(radiusValue)) && parseFloat(radiusValue) > 0) {
+				if (navigator.geolocation) {
+					locationDisplay.value = "위치 정보 가져오는 중...";
+					navigator.geolocation.getCurrentPosition(
+						(position) => {
+							const latitude = position.coords.latitude;
+							const longitude = position.coords.longitude;
+							locationDisplay.value = `위치를 성공적으로 불러왔습니다`;
+
+							params.append('lat', latitude);
+							params.append('lon', longitude);
+							params.append('radius', parseFloat(radiusValue));
+							
+							const apiUrlWithParams = `${baseApiUrl}?${params.toString()}`;
+							fetchAndDisplayLands(apiUrlWithParams);
+						},
+						(error) => {
+							let errorMessage = '위치 정보를 가져올 수 없습니다.';
+							switch(error.code) {
+								case error.PERMISSION_DENIED:
+									errorMessage = "위치 정보 접근 권한이 거부되었습니다.";
+									break;
+								case error.POSITION_UNAVAILABLE:
+									errorMessage = "현재 위치 정보를 사용할 수 없습니다.";
+									break;
+								case error.TIMEOUT:
+									errorMessage = "위치 정보 요청 시간이 초과되었습니다.";
+									break;
+							}
+							console.error('Geolocation error:', error.message);
+							locationDisplay.value = '';
+							landInfoGrid.innerHTML = `<p style="text-align:center; color:red;">${errorMessage}</p>`;
+							alert(errorMessage);
+						}
+					);
+				} else {
+					alert('이 브라우저에서는 Geolocation을 지원하지 않습니다.');
+					locationDisplay.value = '';
+					landInfoGrid.innerHTML = '<p style="text-align:center; color:red;">Geolocation을 지원하지 않는 브라우저입니다.</p>';
+				}
+			} else if (!radiusValue) {
+				locationDisplay.value = '';
+				const apiUrlWithParams = `${baseApiUrl}?${params.toString()}`;
+				fetchAndDisplayLands(apiUrlWithParams);
+			} else {
+				alert('유효한 반경(km)을 입력해주세요. (0보다 큰 숫자 또는 빈칸)');
+				radiusInput.focus();
+				locationDisplay.value = '';
+			}
+		});
+
+		// 페이지 로드 시 기본적으로 모든 토지 목록 표시
+		document.addEventListener('DOMContentLoaded', () => {
+			fetchAndDisplayLands(baseApiUrl); // 파라미터 없이 호출하여 전체 목록 요청
+
+			// 토지 등록 모달 관련 로직
+			const registerLandModal = document.getElementById('register-land-modal');
+			const openRegisterModalButton = document.getElementById('open-register-modal-button');
+			const closeRegisterModalButton = registerLandModal ? registerLandModal.querySelector('.close-register-modal-button') : null;
+			const registerModalOverlay = registerLandModal ? registerLandModal.querySelector('.modal-overlay') : null;
+			const registerLandForm = document.getElementById('register-land-form');
+
+			function openRegisterModal() {
+				if (registerLandModal) registerLandModal.style.display = 'flex';
+			}
+
+			function closeRegisterModal() {
+				if (registerLandModal) registerLandModal.style.display = 'none';
+				if (registerLandForm) registerLandForm.reset(); // 폼 초기화
+			}
+
+			if (openRegisterModalButton) {
+				openRegisterModalButton.addEventListener('click', openRegisterModal);
+			}
+			if (closeRegisterModalButton) {
+				closeRegisterModalButton.addEventListener('click', closeRegisterModal);
+			}
+			if (registerModalOverlay) {
+				registerModalOverlay.addEventListener('click', closeRegisterModal);
+			}
+
+			// ESC 키로 등록 모달 닫기 (인증 모달과 별개로)
+			window.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape' && registerLandModal && registerLandModal.style.display === 'flex') {
+					closeRegisterModal();
+				}
+			});
+		});
+	</script>
+</body>
+</html>

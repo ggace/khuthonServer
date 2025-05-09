@@ -15,7 +15,7 @@ public class LoginInterceptor implements HandlerInterceptor{
 		Integer loginedId = Integer.parseInt(request.getSession().getAttribute("loginedId")==null?"0":request.getSession().getAttribute("loginedId").toString());
 		System.out.println("loginedId : " + loginedId);
 		request.setAttribute("loginedId", loginedId);
-		request.setAttribute("isLogined", loginedId==0?false:true);
+		request.setAttribute("isLogined", loginedId==0 || loginedId==null?false:true);
 		return HandlerInterceptor.super.preHandle(request, response, handler);
 	}
 }

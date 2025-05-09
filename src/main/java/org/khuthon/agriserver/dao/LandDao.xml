@@ -7,6 +7,7 @@
         FROM land
         JOIN `user`
         ON land.owner_id=user.id
+        ORDER BY land.id DESC
 	</select>
 
     <select id="getLand" resultType="Land">
@@ -25,7 +26,8 @@
         landName=#{landName},
         size=#{size},
         contents=#{contents},
-        phoneNumber=#{phone}
+        phoneNumber=#{phone},
+        price=#{price}
     </insert>
 
     <delete id="deleteLand">
@@ -46,4 +48,10 @@
         user_id=#{id}
     </delete>
 
+    <!-- 사용자 ID로 해당 사용자가 보유한 땅 조회 -->
+    <select id="getLandsByUserId" resultType="org.khuthon.agriserver.dto.Land">
+        SELECT id, imageUrl, latitude, longitude
+        FROM land
+        WHERE userId = #{userId}
+    </select>
 </mapper>

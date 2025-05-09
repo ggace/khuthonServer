@@ -6,9 +6,15 @@
     <!-- 특정 게시판에 속한 게시글 조회 -->
     <select id="getArticlesByBoardId" resultType="Article">
         SELECT * FROM article
-        WHERE board_id = #{boardId}
-        ORDER BY created_at DESC
+        WHERE boardId = #{boardId}
+        ORDER BY createAt DESC
     </select>
+
+    <!-- 게시글 삽입 -->
+    <insert id="insertArticle" parameterType="Article">
+        INSERT INTO article (boardId, title, content, createAt, popularity, imageUrl, writerId)
+        VALUES (#{boardId}, #{title}, #{content}, NOW(), 0, "", #{userId})
+    </insert>
 
     <!-- 추천수로 정렬된 게시글 조회 -->
     <select id="getArticlesByPopularity" resultType="Article">
@@ -19,14 +25,8 @@
     <!-- 최신순으로 정렬된 게시글 조회 -->
     <select id="getArticlesByTime" resultType="Article">
         SELECT * FROM article
-        ORDER BY created_at DESC
+        ORDER BY createAt DESC
     </select>
-
-    <!-- 게시글 등록 -->
-    <insert id="uploadArticle" parameterType="Article">
-        INSERT INTO article (board_id, title, content, created_at, popularity, image_url, writer_id, writer_name)
-        VALUES (#{boardId}, #{title}, #{content}, #{createdAt}, #{popularity}, #{imageUrl}, #{writerId}, #{writerName})
-    </insert>
 
     <!-- 게시글 추천수 증가 -->
     <update id="increasePopularity">

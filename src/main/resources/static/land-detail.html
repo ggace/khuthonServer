@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>토지 상세 정보</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* land-detail.html 전용 스타일 */
+        .land-detail-content {
+            padding: 20px;
+        }
+        .land-detail-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background-color: #eee; /* 이미지 없을 경우 배경색 */
+            min-height: 200px; /* 이미지 없을 경우 최소 높이 */
+            display: block; /* 이미지가 div처럼 동작하도록 */
+            background-size: cover;
+            background-position: center;
+        }
+        .land-detail-info p {
+            margin: 8px 0;
+            font-size: 1.1em;
+        }
+        .land-detail-info strong {
+            color: #333;
+            min-width: 80px; /* 라벨 너비 고정 */
+            display: inline-block;
+        }
+
+        #land-image-placeholder {
+            width: auto;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="logo"><img src="assets/logo.png" alt="로고"></a>
+            <a href="index.html" class="site-title" style="text-decoration: none;">PUBLIC GARDEN</a>
+            <button class="user-info" id="open-auth-modal-button">로그인 / 회원가입</button>
+        </header>
+
+        <main class="land-detail-content">
+            <h1 id="land-name-placeholder">토지 이름 로딩 중...</h1>
+            
+            <div id="land-image-placeholder" class="land-detail-image" style="background-image: url(\'assets/land_name.png\');">
+                <!-- JavaScript를 통해 실제 이미지 또는 플레이스홀더 스타일 적용 -->
+            </div>
+
+            <div class="land-detail-info">
+                <p><strong>소유자:</strong> <span id="land-owner-placeholder">(정보 로딩 중)</span></p>
+                <p><strong>위치:</strong> <span id="land-location-placeholder">(정보 로딩 중)</span></p>
+                <p><strong>가격:</strong> <span id="land-price-placeholder">(정보 로딩 중)</span></p>
+                <p><strong>평수:</strong> <span id="land-area-placeholder">(정보 로딩 중)</span></p>
+                <p><strong>연락처:</strong> <span id="land-phone-placeholder">(정보 로딩 중)</span></p>
+                <!-- 추가적으로 표시할 정보가 있다면 여기에 추가 -->
+            </div>
+
+            <div style="margin-top: 30px; text-align: right;">
+                <a href="land.html" id="back-to-land-list-button" class="button" style="background-color: #6c757d; padding: 6px 15px 8px 17px; font-size: 2em;">목록으로</a>
+            </div>
+        </main>
+    </div>
+
+    <script src="auth-modal.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const landId = urlParams.get('id');
+
+            const landNameElement = document.getElementById('land-name-placeholder');
+            const landImageElement = document.getElementById('land-image-placeholder');
+            const landOwnerElement = document.getElementById('land-owner-placeholder');
+            const landLocationElement = document.getElementById('land-location-placeholder');
+            const landPriceElement = document.getElementById('land-price-placeholder');
+            const landAreaElement = document.getElementById('land-area-placeholder');
+            const landPhoneElement = document.getElementById('land-phone-placeholder');
+            const landContentsElement = document.getElementById('land-contents-placeholder');
+
+            // 페이지 내용을 채우는 함수
+            function populatePageWithData(data) {
+                if (!data) return;
+
+                if (landNameElement) landNameElement.textContent = data.landName || '정보 없음';
+                
+                if (landImageElement) {
+                    if (data.img) {
+                        landImageElement.style.backgroundImage = `url('${data.img}')`;
+                    } else {
+                        landImageElement.style.backgroundImage = "url('assets/land_name.png')";
+                    }
+                }
+                if (landOwnerElement) landOwnerElement.textContent = data.userName || '정보 없음';
+                
+                let locationString = '정보 없음';
+                if (data.address) {
+                    locationString = data.address;
+                } else if (data.contents && (typeof data.latitude === 'undefined' || typeof data.longitude === 'undefined')) {
+                    locationString = data.contents;
+                } else if (typeof data.latitude !== 'undefined' && typeof data.longitude !== 'undefined') {
+                    locationString = `위도: ${data.latitude}, 경도: ${data.longitude}`;
+                } else if (data.contents) {
+                    locationString = data.contents;
+                }
+                if (landLocationElement) landLocationElement.textContent = locationString;
+                
+                if (landContentsElement) landContentsElement.textContent = data.contents || '상세 설명 없음';
+
+                if (landPriceElement) landPriceElement.textContent = (data.price !== null && typeof data.price !== 'undefined' && data.price >= 0) ? `${data.price.toLocaleString()}원` : '가격 정보 없음';
+                if (landAreaElement) landAreaElement.textContent = (data.size !== null && typeof data.size !== 'undefined' && data.size >= 0) ? `${data.size}㎡` : '면적 정보 없음';
+                if (landPhoneElement) landPhoneElement.textContent = data.phoneNumber || '정보 없음';
+            }
+
+            if (!landId) {
+                if(landNameElement) landNameElement.textContent = '잘못된 접근입니다.';
+                // 모든 플레이스홀더를 '정보 없음' 또는 적절한 메시지로 설정할 수 있습니다.
+                if(landImageElement) landImageElement.style.backgroundImage = "url('assets/land_name.png')"; // 기본 이미지
+                if(landOwnerElement) landOwnerElement.textContent = '정보 없음';
+                if(landLocationElement) landLocationElement.textContent = '정보 없음';
+                if(landContentsElement) landContentsElement.textContent = '정보 없음';
+                if(landPriceElement) landPriceElement.textContent = '정보 없음';
+                if(landAreaElement) landAreaElement.textContent = '정보 없음';
+                if(landPhoneElement) landPhoneElement.textContent = '정보 없음';
+                return;
+            }
+
+            // 1. sessionStorage에서 데이터 시도
+            try {
+                const cachedDataString = sessionStorage.getItem(`landDetail-${landId}`);
+                if (cachedDataString) {
+                    const cachedData = JSON.parse(cachedDataString);
+                    populatePageWithData(cachedData);
+                }
+            } catch (e) {
+                console.error('sessionStorage에서 토지 데이터 읽기 실패:', e);
+                // 실패 시 다음 단계인 API 호출로 넘어감
+            }
+
+            // 2. API를 통해 최신 데이터 가져오기
+            const apiUrl = `http://172.21.12.44:5500/api/land/${landId}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    // sessionStorage에서 이미 데이터를 표시했다면, 오류 메시지를 사용자에게 강하게 알릴 필요는 없을 수 있음
+                    // 단, sessionStorage 데이터가 없었다면, 기존처럼 오류 처리
+                    if (!sessionStorage.getItem(`landDetail-${landId}`)) {
+                         throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+                    }
+                    console.warn(`API 요청 실패 (${response.status}), sessionStorage의 데이터로 표시 중일 수 있습니다.`);
+                    return; // sessionStorage 데이터가 있다면 여기서 중단하고 기존 표시 유지
+                }
+                const landDataFromAPI = await response.json();
+                populatePageWithData(landDataFromAPI); // API에서 받은 최신 정보로 페이지 업데이트
+
+                // 선택적: sessionStorage도 최신 정보로 업데이트
+                try {
+                    sessionStorage.setItem(`landDetail-${landId}`, JSON.stringify(landDataFromAPI));
+                } catch (e) {
+                    console.warn('sessionStorage에 최신 토지 데이터 업데이트 실패:', e);
+                }
+
+            } catch (error) {
+                console.error('토지 상세 정보를 불러오는 중 오류 발생:', error);
+                // sessionStorage에 데이터가 없었을 경우에만 오류 메시지를 크게 표시
+                if (!sessionStorage.getItem(`landDetail-${landId}`)) {
+                    if (landNameElement) landNameElement.textContent = '정보를 불러올 수 없습니다.';
+                    // 필요하다면 다른 필드들도 오류 상태로 업데이트
+                }
+            }
+        });
+    </script>
+
+    <!-- 인증 모달 (auth-modal.js와 연동) -->
+    <div id="auth-modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="close-auth-modal-button">&times;</button>
+            <div id="login-form-container">
+                <h2>로그인</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">이메일</label>
+                        <input type="email" id="login-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">비밀번호</label>
+                        <input type="password" id="login-password" name="password" required>
+                    </div>
+                    <button type="submit" class="auth-button">로그인</button>
+                </form>
+                <p class="switch-form-text">계정이 없으신가요? <a href="#" id="show-signup-link">회원가입</a></p>
+            </div>
+            <div id="signup-form-container" style="display: none;">
+                <h2>회원가입</h2>
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-name">이름</label>
+                        <input type="text" id="signup-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">이메일</label>
+                        <input type="email" id="signup-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">비밀번호</label>
+                        <input type="password" id="signup-password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password-confirm">비밀번호 확인</label>
+                        <input type="password" id="signup-password-confirm" name="password-confirm" required>
+                    </div>
+                    <button type="submit" class="auth-button">가입하기</button>
+                </form>
+                <p class="switch-form-text">이미 계정이 있으신가요? <a href="#" id="show-login-link">로그인</a></p>
+            </div>
+        </div>
+    </div>
+    <!-- 인증 모달 끝 -->
+</body>
+</html> 

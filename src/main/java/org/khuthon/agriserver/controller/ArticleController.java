@@ -41,36 +41,28 @@ public class ArticleController {
         return articleService.getArticlesByTime();
     }
 
-    // 게시글 등록 (이미지 포함)
-    @PostMapping("/upload")
+    // 게시글 등록 (제목, 내용, 이미지 포함)
+    @GetMapping("/upload")
     public String uploadArticle(HttpServletRequest request,
-                                @RequestParam("boardId") int boardId,
-                                @RequestParam("title") String title,
-                                @RequestParam("content") String content,
-                                @RequestParam("image") MultipartFile image) throws IOException {
+                                int boardId,
+                                String title,
+                                String content,
+                                MultipartFile image) throws IOException {
         // 로그인 체크
-        if (!(boolean) request.getAttribute("isLogined")) {
+        if (request.getAttribute("isLogined") == null || !(boolean) (request.getAttribute("isLogined"))) {
             return "not logined";
         }
 
         int userId = (int) request.getAttribute("loginedId");
         String userName = (String) request.getAttribute("loginedName");
 
-        // 이미지 저장
-        String uploadDir = "uploads/";
-        String originalFilename = image.getOriginalFilename();
-        String savedFilename = UUID.randomUUID() + "-" + originalFilename;
-        Path imagePath = Paths.get(uploadDir, savedFilename);
-
-        Files.createDirectories(imagePath.getParent());
-        image.transferTo(imagePath.toFile());
-
-        String imageUrl = "/uploads/" + savedFilename;
 
         // 게시글 등록
-        articleService.createArticle(userId, userName, boardId, title, content, imageUrl);
-
-        return "successfully uploaded";
+        if (articleService.createArticle(userId, userName, boardId, title, content, "")) {
+            return "successfully uploaded";
+        }
+        
+        return "failed to upload";
     }
 
     // 추천수 증가

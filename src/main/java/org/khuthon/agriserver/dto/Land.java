@@ -15,6 +15,8 @@ public class Land {
     private String contents;
     private String phoneNumber;
     private int price;
+    private int size;
+    private int userId;
 
     public int getId() {
         return id;
@@ -42,6 +44,9 @@ public class Land {
     }
     public int getPrice() {
         return price;
+    }
+    public int getSize() {
+        return size;
     }
 
 
@@ -71,5 +76,8 @@ public class Land {
     }
     public void setPrice(int price) {
         this.price = price;
+    }
+    public void setSize(int size) {
+        this.size = size;
     }
 }

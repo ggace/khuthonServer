@@ -31,21 +31,6 @@ public class ArticleService {
         return articleDao.getArticlesByTime();
     }
 
-    // 게시글 등록
-    public void createArticle(int userId, String userName, int boardId, String title, String content, String imageUrl) {
-        Article article = new Article();
-        article.setBoardId(boardId);
-        article.setTitle(title);
-        article.setContent(content);
-        article.setCreatedAt(LocalDateTime.now());
-        article.setPopularity(0);
-        article.setImageUrl(imageUrl);
-        article.setWriterId(userId);
-        article.setWriterName(userName);
-
-        articleDao.uploadArticle(article);
-    }
-
     // 추천수 증가
     public void increasePopularity(int id) {
         articleDao.increasePopularity(id);
@@ -54,6 +39,19 @@ public class ArticleService {
     // 추천수 감소
     public void decreasePopularity(int id) {
         articleDao.decreasePopularity(id);
+    }
+
+    // 게시글 등록
+    public boolean createArticle(int userId, String userName, int boardId, String title, String content, String imageUrl) {
+        try {
+            
+            // DB에 게시글 저장
+            articleDao.insertArticle(userId, userName, boardId, title, content, "");
+            return true;
+        } catch (Exception e) {
+            System.out.println(e);
+            return false;
+        }
     }
 }
 

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>메인 페이지</title>
+	<link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+	<div class="container">
+		<header>
+			<a href="index.html" class="logo"><img src="assets/logo.png" alt="로고"></a>
+			<a href="index.html" class="site-title" style="text-decoration: none;">PUBLIC GARDEN</a>
+			<button class="user-info" id="open-auth-modal-button">로그인 / 회원가입</button>
+		</header>
+
+		<div class="index-main-layout">
+			<section class="index-posts-section">
+				<div class="content-section">
+					<h2>최신 게시글</h2>
+					<div class="post-preview-list">
+						<!-- JavaScript에 의해 동적으로 게시글이 채워질 영역입니다. -->
+						<!-- 기존의 정적 post-preview-item 요소들은 삭제됩니다. -->
+					</div>
+				</div>
+			</section>
+			<aside class="index-actions-sidebar">
+				<div class="nav-buttons">
+					<a href="land.html" class="button">토지</a>
+					<a href="board.html" class="button">게시판</a>
+				</div>
+			</aside>
+		</div>
+	</div>
+	<!-- <script src="board-nav.js"></script> -->
+	<script src="auth-modal.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const boardButton = document.querySelector('a.button[href="board.html"]');
+			if (boardButton) {
+				boardButton.addEventListener('click', () => {
+					sessionStorage.removeItem('boardActiveTab');
+				});
+			}
+
+			// board-nav.js 에 정의된 최신 게시글 API URL과 동일하게 설정
+			const recentArticlesApiUrl = 'http://172.21.12.44:5500/api/article/recent';
+
+			async function loadLatestPosts() {
+				const postPreviewList = document.querySelector('.index-posts-section .post-preview-list');
+				if (!postPreviewList) {
+					console.error('최신 게시글 목록을 찾을 수 없습니다.');
+					return;
+				}
+				postPreviewList.innerHTML = '<p>최신 게시글을 불러오는 중입니다...</p>'; // 로딩 메시지 추가
+
+				try {
+					// const response = await fetch('board.html'); // 기존 방식 주석 처리
+					const response = await fetch(recentArticlesApiUrl); // API 직접 호출
+					if (!response.ok) {
+						// console.error('board.html을 가져오는 데 실패했습니다. 상태:', response.status);
+						console.error(`API 요청 실패: ${response.status} ${response.statusText}`);
+						postPreviewList.innerHTML = '<p>최신 게시글을 불러올 수 없습니다.</p>';
+						return;
+					}
+					// const boardHtmlString = await response.text(); // 기존 방식 주석 처리
+					// const parser = new DOMParser(); // 기존 방식 주석 처리
+					// const boardDoc = parser.parseFromString(boardHtmlString, 'text/html'); // 기존 방식 주석 처리
+					const articles = await response.json(); // API 응답은 JSON
+
+					// const postLinksFromBoard = boardDoc.querySelectorAll('.post-list-item-link'); // 기존 방식 주석 처리
+					postPreviewList.innerHTML = ''; // 기존 미리보기 내용 삭제
+
+					const postsToShow = Math.min(articles.length, 4); 
+
+					if (articles.length === 0) {
+						 postPreviewList.innerHTML = '<p>표시할 게시글이 없습니다.</p>';
+						 return;
+					}
+
+					for (let i = 0; i < postsToShow; i++) {
+						const article = articles[i]; // API로부터 받은 게시글 객체
+						// const postDataLink = postLinksFromBoard[i]; // 기존 방식 주석 처리
+						// const titleElement = postDataLink.querySelector('.title'); // 기존 방식 주석 처리
+						// const title = titleElement ? titleElement.textContent.trim() : '제목 없음'; // 기존 방식 주석 처리
+						const title = article.title || '제목 없음';
+						// let actualLink = postDataLink.getAttribute('href') || '#'; // 기존 방식 주석 처리
+						let actualLink = `post-detail.html?id=${article.id}`;
+
+
+						const linkWrapper = document.createElement('a');
+						linkWrapper.href = actualLink;
+						linkWrapper.style.display = 'block';
+						linkWrapper.style.textDecoration = 'none';
+						linkWrapper.style.color = 'inherit';
+
+						linkWrapper.addEventListener('click', () => {
+							sessionStorage.setItem('cameFromIndex', 'true');
+						});
+						
+						const previewItemDiv = document.createElement('div');
+						previewItemDiv.classList.add('post-preview-item');
+
+						const titleSpan = document.createElement('span');
+						titleSpan.classList.add('title');
+						titleSpan.textContent = title;
+
+						const photoPlaceholder = document.createElement('div');
+						photoPlaceholder.classList.add('photo-placeholder');
+						// photoPlaceholder.textContent = '사진'; // '사진' 텍스트 유지
+						if (article.imageUrl) {
+                            photoPlaceholder.style.backgroundImage = `url('${article.imageUrl}')`;
+                            photoPlaceholder.textContent = ''; // 이미지가 있으면 텍스트 숨김
+                        } else {
+                            photoPlaceholder.textContent = '사진X'; // 이미지가 없으면 '사진X' 표시
+                        }
+
+						previewItemDiv.appendChild(titleSpan);
+						previewItemDiv.appendChild(photoPlaceholder);
+						linkWrapper.appendChild(previewItemDiv);
+						postPreviewList.appendChild(linkWrapper);
+					}
+
+				} catch (error) {
+					console.error('최신 게시글을 불러오는 중 오류 발생:', error);
+					postPreviewList.innerHTML = '<p>최신 게시글을 불러오는 중 오류가 발생했습니다.</p>';
+				}
+			}
+
+			loadLatestPosts();
+		});
+	</script>
+
+	<!-- 인증 모달 시작 -->
+	<div id="auth-modal" class="modal" style="display: none;">
+		<div class="modal-overlay"></div>
+		<div class="modal-content">
+			<button class="close-auth-modal-button">&times;</button>
+			
+			<div id="login-form-container">
+				<h2>로그인</h2>
+				<form id="login-form" action="/api/user/login" method="get">
+					<div class="form-group">
+						<label for="login-email">이메일</label>
+						<input type="email" id="login-email" name="loginId" required>
+					</div>
+					<div class="form-group">
+						<label for="login-password">비밀번호</label>
+						<input type="password" id="login-password" name="loginPw" required>
+					</div>
+					<button type="submit" class="auth-button">로그인</button>
+				</form>
+				<p class="switch-form-text">계정이 없으신가요? <a href="#" id="show-signup-link">회원가입</a></p>
+			</div>
+
+			<div id="signup-form-container" style="display: none;">
+				<h2>회원가입</h2>
+				<form id="signup-form" action="/api/user/join" method="post">
+					<div class="form-group">
+						<label for="signup-name">이름</label>
+						<input type="text" id="signup-name" name="name" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-email">이메일</label>
+						<input type="email" id="signup-email" name="email" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-password">비밀번호</label>
+						<input type="password" id="signup-password" name="password" required>
+					</div>
+					<div class="form-group">
+						<label for="signup-password-confirm">비밀번호 확인</label>
+						<input type="password" id="signup-password-confirm" name="password-confirm" required>
+					</div>
+					<button type="submit" class="auth-button">가입하기</button>
+				</form>
+				<p class="switch-form-text">이미 계정이 있으신가요? <a href="#" id="show-login-link">로그인</a></p>
+			</div>
+		</div>
+	</div>
+	<!-- 인증 모달 끝 -->
+</body>
+
+</html>

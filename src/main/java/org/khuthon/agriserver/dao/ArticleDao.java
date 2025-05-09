@@ -11,7 +11,7 @@ public interface ArticleDao {
     List<Article> getArticlesByPopularity();          // 추천수로 정렬된 게시글
     List<Article> getArticlesByTime();                // 최신순으로 정렬된 게시글
 
-    void uploadArticle(Article article);              // 게시글 등록
+    void insertArticle(int userId, String userName, int boardId, String title, String content, String imageUrl);              // 게시글 등록
     void increasePopularity(int id);                  // 추천수 증가
     void decreasePopularity(int id);                  // 추천수 감소
 }

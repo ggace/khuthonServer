@@ -5,10 +5,14 @@ import java.util.List;
 import org.khuthon.agriserver.dto.Land;
 import org.khuthon.agriserver.service.LandService;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
+import lombok.Setter;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 
 
@@ -31,7 +36,7 @@ public class LandController {
 
     @GetMapping("/")
     public List<Land> getLandList(HttpServletRequest request) {
-        
+        System.out.println(request.getAttribute("loginedId"));
         List<Land> landList = landService.getLandList();
 
         return landList;
@@ -42,17 +47,33 @@ public class LandController {
         
         return land;
     }
-    @PostMapping("/")
-    public String makeLand(HttpServletRequest request, @RequestBody RegRequest regRequest) {
-        if(request.getAttribute("isLogined") == null || !(boolean)(request.getAttribute("isLogined"))) {
-            return "not logined";
-        }
 
-        if(!landService.registerLand(1, regRequest.latitude, regRequest.longitude, regRequest.landName, regRequest.contents, regRequest.phone, regRequest.size)) {
-            return "failed to register";
+    @Getter
+    @Setter
+    class LandDto {
+        private Double latitude;
+        private Double longitude;
+        private String landName;
+        private String contents;
+        private String phone;
+        private Integer size;
+
+    }
+
+    @PostMapping(value="/")
+    public String makeLand(Double latitude,Double longitude,String landName,String contents,String phone,Integer size, Integer price, HttpServletRequest request) {
+        // System.out.println("test");
+        if(request.getAttribute("isLogined") == null || !(boolean)(request.getAttribute("isLogined"))) {
+            return "not logined <script> location.replace('/land.html') </script>";
+        }
+// 
+        // System.out.println(latitude + " " + longitude);
+        Integer id = (Integer)request.getAttribute("loginedId");
+        if(!landService.registerLand(1, latitude, longitude, landName, contents, phone, size, price)) {
+            return "failed to register <script> location.replace('/land.html') </script>";
         }
         
-        return "successfully registered";
+        return "successfully registered <script> location.replace('/land.html') </script>";
     }
 
     @DeleteMapping("/{id}")
@@ -68,18 +89,9 @@ public class LandController {
         
         return "successfully deleted";
     }
-
-    class RegRequest {
-        public int latitude;
-        public int longitude;
-        public String landName;
-        public String contents;
-        public String phone;
-        public int size;
-    }
     
-    @GetMapping("/useLand")
-    public String registerLandUse(HttpServletRequest request, int landId) {
+    @GetMapping("/useLand/{landId}")
+    public String registerLandUse(HttpServletRequest request, @PathVariable int landId) {
         if(request.getAttribute("isLogined") == null || !(boolean)(request.getAttribute("isLogined"))) {
             return "not logined";
         }
@@ -93,8 +105,8 @@ public class LandController {
         return "registered";
 
     }
-    @PostMapping("/useLand")
-    public String finishLandUse(HttpServletRequest request, int landId) {
+    @PostMapping("/useLand/{landId}")
+    public String finishLandUse(HttpServletRequest request, @PathVariable int landId) {
         if(request.getAttribute("isLogined") == null || !(boolean)(request.getAttribute("isLogined"))) {
             return "not logined";
         }

@@ -25,15 +25,15 @@ public class LandService {
         return landDao.getLand(id);
     }
 
-    public boolean registerLand(int ownerid, int latitude, int longitude, String landName, String contents, String phone,
-            int size) {
+    public boolean registerLand(int ownerid, Double latitude, double longitude, String landName, String contents, String phone,
+            int size, int price) {
         
         try {
-            landDao.registerLand(ownerid, latitude, longitude, landName, contents, phone, size);
+            landDao.registerLand(ownerid, latitude, longitude, landName, contents, phone, size, price);
             return true;
         }
         catch(Exception e) {
-            
+            System.out.println(e);
             return false;
         }
     }
@@ -66,5 +66,10 @@ public class LandService {
         catch(Exception e) {
             return false;
         }
+    }
+
+    // 사용자 ID로 해당 사용자가 보유한 땅들 조회
+    public List<Land> getLandsByUserId(int userId) {
+        return landDao.getLandsByUserId(userId);
     }
 }

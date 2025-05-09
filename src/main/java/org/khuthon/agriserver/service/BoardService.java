@@ -13,11 +13,9 @@ import java.time.LocalDateTime;
 public class BoardService {
 
     private final BoardDao boardDao;
-    private final ArticleDao articleDao;
 
-    public BoardService(BoardDao boardDao, ArticleDao articleDao) {
+    public BoardService(BoardDao boardDao) {
         this.boardDao = boardDao;
-        this.articleDao = articleDao;
     }
 
     // 모든 게시판 조회
@@ -25,48 +23,13 @@ public class BoardService {
         return boardDao.getAllBoards();
     }
 
-    // 특정 게시판의 게시글 조회
-    public List<Article> getArticlesByBoardId(int boardId) {
-        return articleDao.getArticlesByBoardId(boardId);
-    }
-
-    // 추천수로 정렬된 게시글 조회
-    public List<Article> getArticlesByPopularity() {
-        return articleDao.getArticlesByPopularity();
-    }
-
-    // 최신순으로 정렬된 게시글 조회
-    public List<Article> getArticlesByTime() {
-        return articleDao.getArticlesByTime();
-    }
-    
-    // 게시판 등록
+    // 게시판 생성
     public boolean createBoard(String name, String description) {
         try {
             Board board = new Board();
             board.setName(name);
             board.setDescription(description);
             boardDao.insertBoard(board);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    // 게시글 추천수 증가
-    public boolean increasePopularity(int id) {
-        try {
-            articleDao.increasePopularity(id);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    // 게시글 추천수 감소
-    public boolean decreasePopularity(int id) {
-        try {
-            articleDao.decreasePopularity(id);
             return true;
         } catch (Exception e) {
             return false;
